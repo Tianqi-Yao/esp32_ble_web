@@ -1,3 +1,7 @@
+<p align="right">
+  English | <a href="./README.zh-CN.md">简体中文</a>
+</p>
+
 # esp32_ble_web
 
 Web Bluetooth demo with **ESP32**:  
@@ -34,13 +38,3 @@ Web Bluetooth demo with **ESP32**:
 - Enable Pages in repo settings → branch `main` → root  
 - Then access:  
   `https://<your-username>.github.io/esp32_ble_web/`
-
----
-
-### 中文说明 (Chinese)
-这是一个 ESP32 + Web Bluetooth 的演示项目：  
-- LED 控制（发/收 `"1"` 或 `"0"`）  
-- 土壤湿度传感器（输出 `"原始值,湿度%"`）  
-- 提供了一个带样式的网页（`index.html`）和一个无样式简洁版（`esp32_ble_web_no_css.html`），方便课堂教学。  
-
-iOS 请使用 **Bluefy/WebBLE** 浏览器。  
