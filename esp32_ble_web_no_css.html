@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ESP32 BLE (LED + Soil)</title>
+</head>
+<body>
+  <h1>ESP32 BLE · Minimal Text Protocol (LED + Soil)</h1>
+
+  <p>
+    <button id="btnConnect">Connect</button>
+    <button id="btnDisconnect" disabled>Disconnect</button>
+  </p>
+  <p>State: <span id="state">Disconnected</span></p>
+
+  <h2>Soil Sensor</h2>
+  <p>Raw: <span id="soilRaw">--</span></p>
+  <p>Humidity: <span id="soilHum">--</span>%</p>
+  <p>Last update: <span id="soilTime">—</span></p>
+  <p>
+    <button id="btnRead">Read Now</button>
+    <label><input type="checkbox" id="autoToggle"> Auto</label>
+  </p>
+
+  <h2>LED</h2>
+  <p>
+    <label><input type="checkbox" id="ledToggle"> Send "1" for ON / "0" for OFF</label>
+  </p>
+  <p>LED echo: <span id="ledStatus">—</span></p>
+
+  <p><small>Note: On iOS, open this page with Bluefy/WebBLE. This page uses text-only characteristics. Sensor payload is expected as "raw,humidity" (e.g., "1780,63").</small></p>
+
+<script>
+// ---- Fixed UUIDs (text protocol) ----
+const SERVICE_UUID = '19b10000-e8f2-537e-4f6c-d104768a1214';
+const LED_CHAR_UUID = '19b10002-e8f2-537e-4f6c-d104768a1214';
+const SENSOR_CHAR_UUID = '19b10001-e8f2-537e-4f6c-d104768a1214';
+
+// ---- State / Elements ----
+let device, server, service, ledChar, sensorChar, autoTimer=null;
+const $ = s=>document.querySelector(s);
+const stateEl=$('#state');
+const btnConnect=$('#btnConnect'), btnDisconnect=$('#btnDisconnect');
+const btnRead=$('#btnRead'), autoToggle=$('#autoToggle');
+const ledToggle=$('#ledToggle'), ledStatus=$('#ledStatus');
+const soilRaw=$('#soilRaw'), soilHum=$('#soilHum'), soilTime=$('#soilTime');
+
+function setConnected(on, name){
+  stateEl.textContent = on ? ('Connected: ' + (name||'(no name)')) : 'Disconnected';
+  btnDisconnect.disabled = !on;
+  btnRead.disabled = !on;
+  autoToggle.disabled = !on;
+  ledToggle.disabled = !on;
+}
+
+btnConnect.addEventListener('click', async()=>{
+  try{
+    if(!navigator.bluetooth){ alert('Web Bluetooth not available.'); return; }
+    device = await navigator.bluetooth.requestDevice({
+      filters:[{services:[SERVICE_UUID]}],
+      optionalServices:[SERVICE_UUID]
+    });
+    device.addEventListener('gattserverdisconnected', onDisconnected);
+    server = await device.gatt.connect();
+    service = await server.getPrimaryService(SERVICE_UUID);
+    ledChar = await service.getCharacteristic(LED_CHAR_UUID);
+    sensorChar = await service.getCharacteristic(SENSOR_CHAR_UUID);
+
+    setConnected(true, device.name);
+    await refreshLedFromRead();
+
+    if (sensorChar.properties.notify) {
+      autoToggle.checked = true;
+      await startNotify();
+    }
+  }catch(e){ console.error(e); alert('Connect failed: '+e); }
+});
+
+btnDisconnect.addEventListener('click', ()=>{ try{ server && server.disconnect(); }catch{} });
+function onDisconnected(){ setConnected(false); stopAuto(); }
+
+// ---- LED: send '1' / '0' only ----
+ledToggle.addEventListener('change', async()=>{
+  if(!ledChar) return;
+  const txt = ledToggle.checked ? '1' : '0';
+  try{
+    await ledChar.writeValue(new TextEncoder().encode(txt));
+    await refreshLedFromRead();
+  }catch(e){ console.error(e); alert('LED write failed: '+e); }
+});
+
+async function refreshLedFromRead(){
+  try{
+    const dv = await ledChar.readValue();
+    const s = new TextDecoder().decode(dv).trim();
+    ledToggle.checked = (s === '1');
+    ledStatus.textContent = s || '—';
+  }catch(e){ console.error(e); }
+}
+
+// ---- Sensor ----
+btnRead.addEventListener('click', readSensorOnce);
+autoToggle.addEventListener('change', async()=>{
+  if(!sensorChar){ autoToggle.checked=false; return; }
+  if(autoToggle.checked){
+    if(sensorChar.properties.notify) await startNotify(); else startPolling();
+  } else { stopAuto(); }
+});
+
+async function readSensorOnce(){
+  try{
+    const dv = await sensorChar.readValue();
+    renderSensor(dv);
+  }catch(e){ console.error(e); }
+}
+
+async function startNotify(){
+  stopPolling();
+  try{
+    await sensorChar.startNotifications();
+    sensorChar.addEventListener('characteristicvaluechanged', e=>renderSensor(e.target.value));
+  }catch(e){ console.error(e); }
+}
+
+function startPolling(){ stopPolling(); autoTimer = setInterval(readSensorOnce, 1000); }
+function stopPolling(){ if(autoTimer){ clearInterval(autoTimer); autoTimer=null; } }
+function stopAuto(){ stopPolling(); try{ sensorChar && sensorChar.stopNotifications && sensorChar.stopNotifications(); }catch{} }
+
+function renderSensor(dv){
+  const txt = new TextDecoder().decode(dv).trim();
+  // Expecting "raw,humidity"; if only one number is sent, show humidity as '--'.
+  let raw='—', hum='—';
+  if (txt) {
+    const parts = txt.split(/[\s,]+/).filter(Boolean);
+    if (parts.length >= 2) { raw = parts[0]; hum = parts[1]; }
+    else if (parts.length === 1) { raw = parts[0]; }
+  }
+  soilRaw.textContent = raw;
+  soilHum.textContent = hum;
+  soilTime.textContent = new Date().toLocaleString();
+}
+</script>
+</body>
+</html>
