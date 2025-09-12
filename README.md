@@ -25,7 +25,7 @@ Web Bluetooth demo with **ESP32**:
 1. **Flash firmware**  
    - Open `.ino` in Arduino IDE, select ESP32 board, upload.
 2. **Open the webpage**  
-   - Launch `index.html` (or host via GitHub Pages `https://tianqi-yao.github.io/esp32_ble_web/`).  
+   - Launch `index.html` (or visit `https://tianqi-yao.github.io/esp32_ble_web/`).  
    - Chrome/Edge/Android work directly; **iOS** requires **Bluefy** App.
 3. **Connect and control**  
    - Click **Connect** → pick your ESP32.  
