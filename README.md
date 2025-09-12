@@ -37,4 +37,4 @@ Web Bluetooth demo with **ESP32**:
 ## GitHub Pages (optional)
 - Enable Pages in repo settings → branch `main` → root  
 - Then access:  
-  `[https://<your-username>.github.io/esp32_ble_web/](https://tianqi-yao.github.io/esp32_ble_web/)`
+  `https://tianqi-yao.github.io/esp32_ble_web/`
