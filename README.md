@@ -1,1 +1,46 @@
 # esp32_ble_web
+
+Web Bluetooth demo with **ESP32**:  
+- Toggle onboard LED (send/receive text `1` or `0`)  
+- Read soil moisture sensor value (`raw` + `humidity %`)  
+- Fully **text-only protocol**, easy for teaching
+
+## Files
+- `doit_esp32_devkitv1_BLE_web.ino` – ESP32 firmware (BLE Service + two Characteristics)
+- `index.html` – main webpage (with simple styling)
+- `esp32_ble_web_no_css.html` – minimal version without CSS (easier for class explanation)
+
+## UUIDs
+- **Service UUID**: `19b10000-e8f2-537e-4f6c-d104768a1214`
+- **LED Characteristic** (WRITE/READ, text): accepts `"1"` or `"0"`
+- **Sensor Characteristic** (READ/NOTIFY, text):  
+  - Payload format: `"raw,humidity"` (example: `1780,63`)
+
+> Default pins: LED = **GPIO2**, Soil Sensor = **GPIO4 (ADC)**  
+> For Wi-Fi + ADC, better to use ADC1 pins (GPIO 32–39).
+
+## How to Use
+1. **Flash firmware**  
+   - Open `.ino` in Arduino IDE, select ESP32 board, upload.
+2. **Open the webpage**  
+   - Launch `index.html` (or host via GitHub Pages).  
+   - Chrome/Edge/Android work directly; **iOS** requires **Bluefy/WebBLE**.
+3. **Connect and control**  
+   - Click **Connect** → pick your ESP32.  
+   - **LED**: toggle checkbox → sends `"1"`/`"0"` and reads back.  
+   - **Soil sensor**: click **Read Now** or enable **Auto** (notify if supported, else polling).
+
+## GitHub Pages (optional)
+- Enable Pages in repo settings → branch `main` → root  
+- Then access:  
+  `https://<your-username>.github.io/esp32_ble_web/`
+
+---
+
+### 中文说明 (Chinese)
+这是一个 ESP32 + Web Bluetooth 的演示项目：  
+- LED 控制（发/收 `"1"` 或 `"0"`）  
+- 土壤湿度传感器（输出 `"原始值,湿度%"`）  
+- 提供了一个带样式的网页（`index.html`）和一个无样式简洁版（`esp32_ble_web_no_css.html`），方便课堂教学。  
+
+iOS 请使用 **Bluefy/WebBLE** 浏览器。  
