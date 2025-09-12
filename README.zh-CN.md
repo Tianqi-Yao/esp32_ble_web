@@ -39,13 +39,4 @@
 1. 仓库 **Settings → Pages**  
 2. **Source** 选 `Deploy from a branch`，分支 `main`，目录 `/root`，保存  
 3. 等待部署完成，访问：  
-   `https://<你的 GitHub 用户名>.github.io/esp32_ble_web/`
-
-## 常见问题
-- **扫不到设备**：确保 ESP32 正在广播且把 Service UUID **加入广告**；安卓需开蓝牙和定位；把手机靠近。  
-- **连上读不到**：网页需在 `requestDevice` 里把 **Service UUID 放进 `optionalServices`**；iOS 请用 Bluefy。  
-- **湿度不准**：做一次**两点标定**（干/湿），把数值填到网页的 Wet/Dry，或把固件里的 `RAW_DRY/RAW_WET` 改为你测得的原始值。  
-
----
-
-MIT © 你
+   `https://tianqi-yao.github.io/esp32_ble_web/`
